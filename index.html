@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FIFA Juice & Cafe | Online Ordering</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div class="brand"><div class="logo">🍹</div><div><strong>FIFA JUICE & CAFE</strong><small>Fresh • Tasty • Refreshing</small></div></div>
+  <button class="cartBtn" onclick="openCart()">🛒 Cart <span id="cartCount">0</span></button>
+</header>
+
+<section class="hero">
+  <div>
+    <span>WELCOME TO</span>
+    <h1>FIFA JUICE & CAFE</h1>
+    <p>Juices • Shakes • Burgers • Fried Chicken • Snacks</p>
+    <a href="#menu">ORDER NOW</a>
+  </div>
+</section>
+
+<main>
+  <section id="menu">
+    <div class="title"><span>OUR MENU</span><h2>Choose your favourites</h2></div>
+    <div class="categories" id="categories"></div>
+    <div class="grid" id="menuGrid"></div>
+  </section>
+</main>
+
+<div class="overlay" id="overlay" onclick="closeCart()"></div>
+<aside class="cart" id="cart">
+  <div class="cartHead"><div><span>YOUR ORDER</span><h2>Shopping Cart</h2></div><button onclick="closeCart()">✕</button></div>
+  <div id="cartItems"></div>
+  <div class="total"><span>Total</span><b>₹<span id="total">0</span></b></div>
+
+  <form id="orderForm">
+    <h3>Customer Details</h3>
+    <label>Name</label><input id="customerName" required placeholder="Your name">
+    <label>Phone Number</label><input id="phone" required type="tel" inputmode="numeric" pattern="[0-9]{10}" placeholder="10-digit phone number">
+    <label>Address</label><textarea id="address" required placeholder="Full delivery address"></textarea>
+    <label>Order Type</label>
+    <select id="orderType"><option>Delivery</option><option>Pickup</option></select>
+    <div class="orderNo">Order No: <b id="orderNo"></b></div>
+    <button class="place" type="submit">📲 PLACE ORDER ON WHATSAPP</button>
+  </form>
+</aside>
+
+<footer>
+  <h3>FIFA JUICE & CAFE</h3>
+  <p>📍 YOUR ADDRESS</p>
+  <p>📞 9496686086 / 8129686086</p>
+  <small>Online ordering website</small>
+</footer>
+<script src="script.js"></script>
+</body>
+</html>
