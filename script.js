@@ -186,7 +186,7 @@ document.getElementById("orderForm").addEventListener("submit", async e => {
     const { collection, addDoc, serverTimestamp } =
       await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js");
 
-    await addDoc(collection(db, "orders"), {
+    const docRef = await addDoc(collection(db, "orders"), {
       orderNumber: no,
       customerName: name,
       phone: phone,
@@ -199,18 +199,58 @@ document.getElementById("orderForm").addEventListener("submit", async e => {
     });
 
     alert("Order placed successfully! 🎉\nOrder No: " + no);
+   localStorage.setItem("fifaOrderId", docRef.id);
+localStorage.setItem("fifaOrderNo", no);
+let stopTracking = null;
+async function startOrderTracking(orderId, orderNo) {
+  const db = await dbPromise;
 
-    cart = {};
-    update();
-    document.getElementById("orderForm").reset();
-    closeCart();
+  const { doc, onSnapshot } =
+    await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js");
 
-  } catch(error) {
-    console.error("Order error:", error);
-    alert("Order submit cheyyan pattiyilla. Please try again.");
-  }
-});
+  const tracking = document.getElementById("orderTracking");
 
+  if (!tracking) return;
+
+  tracking.style.display = "block";
+  document.getElementById("trackOrderNo").textContent = orderNo;
+
+  if (stopTracking) stopTracking();
+
+  stopTracking = onSnapshot(
+    doc(db, "orders", orderId),
+    (snapshot) => {
+      if (!snapshot.exists()) return;
+
+      const status = snapshot.data().status || "New";
+
+      const steps = ["New", "Preparing", "Out for Delivery", "Completed"];
+      const current = steps.indexOf(status);
+
+      document.getElementById("track1").textContent =
+        current >= 0 ? "🟢 Order Placed" : "⚪ Order Placed";
+
+      document.getElementById("track2").textContent =
+        current >= 1 ? "🟢 Preparing" : "⚪ Preparing";
+
+      document.getElementById("track3").textContent =
+        current >= 2 ? "🟢 Out for Delivery" : "⚪ Out for Delivery";
+
+      document.getElementById("track4").textContent =
+        current >= 3 ? "🟢 Completed" : "⚪ Completed";
+
+      document.getElementById("trackStatus").textContent = status;
+    }
+  );
+}
+
+const savedOrderId = localStorage.getItem("fifaOrderId");
+const savedOrderNo = localStorage.getItem("fifaOrderNo");
+
+if (savedOrderId) {
+  startOrderTracking(savedOrderId, savedOrderNo);
+}
+  
 setup();
 cats();
 render();
