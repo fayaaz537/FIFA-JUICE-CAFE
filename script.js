@@ -125,5 +125,93 @@ function closeCart(){document.getElementById("cart").classList.remove("open");do
 function orderNo(){let d=new Date();return "FIFA-"+d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0")+"-"+Math.floor(100+Math.random()*900)}
 document.getElementById("orderNo").textContent=orderNo();
 
-document.getElementById("orderForm").addEventListener("submit",e=>{e.preventDefault();if(!Object.keys(cart).length){alert("Please add an item first.");return}let name=document.getElementById("customerName").value.trim(),phone=document.getElementById("phone").value.trim(),address=document.getElementById("address").value.trim(),type=document.getElementById("orderType").value,no=document.getElementById("orderNo").textContent,total=0,lines=[];Object.entries(cart).forEach(([id,q])=>{let x=menu.find(a=>a.id==id);total+=x.price*q;lines.push(x.name+" x "+q+" = ₹"+x.price*q)});let msg="*FIFA JUICE & CAFE - NEW ORDER*\\nOrder No: "+no+"\\n\\nCustomer: "+name+"\\nPhone: "+phone+"\\nOrder Type: "+type+"\\nAddress: "+address+"\\n\\nItems:\\n"+lines.join("\\n")+"\\n\\n*TOTAL: ₹"+total+"*";window.open("https://wa.me/"+restaurant.whatsapp+"?text="+encodeURIComponent(msg),"_blank")});
-setup();cats();render();update();
+
+document.getElementById("orderNo").textContent=orderNo();
+
+/* Firebase */
+const firebaseConfig = {
+  apiKey: "AIzaSyC-MteBY5MtE4OLRjbVkh8tTQEm3DQ79ik",
+  authDomain: "fifa-juice-cafe.firebaseapp.com",
+  projectId: "fifa-juice-cafe",
+  storageBucket: "fifa-juice-cafe.firebasestorage.app",
+  messagingSenderId: "607943642691",
+  appId: "1:607943642691:web:4d24f2c55a03eb686bcef6"
+};
+
+const firebaseApp = import("https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js");
+const firestoreApp = import("https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js");
+
+const dbPromise = Promise.all([firebaseApp, firestoreApp]).then(async ([firebase, firestore]) => {
+  const app = firebase.initializeApp(firebaseConfig);
+  return firestore.getFirestore(app);
+});
+
+/* Save order to Firebase */
+document.getElementById("orderForm").addEventListener("submit", async e => {
+  e.preventDefault();
+
+  if(!Object.keys(cart).length){
+    alert("Please add an item first.");
+    return;
+  }
+
+  const name = document.getElementById("customerName").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const address = document.getElementById("address").value.trim();
+  const type = document.getElementById("orderType").value;
+  const no = document.getElementById("orderNo").textContent;
+
+  let total = 0;
+  let items = [];
+
+  Object.entries(cart).forEach(([id,q]) => {
+    const x = menu.find(a => a.id == id);
+
+    if(x){
+      total += x.price * q;
+
+      items.push({
+        id: x.id,
+        name: x.name,
+        price: x.price,
+        quantity: q,
+        subtotal: x.price * q
+      });
+    }
+  });
+
+  try {
+    const db = await dbPromise;
+
+    const { collection, addDoc, serverTimestamp } =
+      await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js");
+
+    await addDoc(collection(db, "orders"), {
+      orderNumber: no,
+      customerName: name,
+      phone: phone,
+      address: address,
+      orderType: type,
+      items: items,
+      total: total,
+      status: "New",
+      createdAt: serverTimestamp()
+    });
+
+    alert("Order placed successfully! 🎉\nOrder No: " + no);
+
+    cart = {};
+    update();
+    document.getElementById("orderForm").reset();
+    closeCart();
+
+  } catch(error) {
+    console.error("Order error:", error);
+    alert("Order submit cheyyan pattiyilla. Please try again.");
+  }
+});
+
+setup();
+cats();
+render();
+update();
